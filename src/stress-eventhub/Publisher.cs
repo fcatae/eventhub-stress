@@ -16,6 +16,23 @@ namespace stress_eventhub
             _client = EventHubClient.CreateFromConnectionString(connStr);
         }
 
+        public Publisher(string connStr, string path) : this(connStr, path, true)
+        {
+        }
+
+        public Publisher(string connStr, string path, bool newConnection)
+        {
+            if(newConnection)
+            {
+                var factory = MessagingFactory.CreateFromConnectionString(connStr);
+                _client = factory.CreateEventHubClient(path);
+            }
+            else
+            {
+                _client = EventHubClient.CreateFromConnectionString(connStr, path);
+            }
+        }
+
         public Task InitAsync()
         {
             return _client.SendAsync(new EventData(Encoding.UTF8.GetBytes("Init")));

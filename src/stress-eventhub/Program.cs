@@ -29,7 +29,7 @@ namespace stress_eventhub
 
             var config = builder.Build();
 
-            Publisher pub = new Publisher(config["eventhub"]);
+            string connectionString = config["eventhub-ns"];
 
             if (config["batch"] != null)
             {
@@ -39,6 +39,8 @@ namespace stress_eventhub
             {
                 loopCount = Int32.Parse(config["loop"]);
             }
+
+            Publisher pub = new Publisher(connectionString, config["eventhub-path"]);
 
             Console.Write("Initializing... ");
 
