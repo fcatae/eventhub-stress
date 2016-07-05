@@ -15,6 +15,7 @@ namespace stress_eventhub
             Stopwatch watch = new Stopwatch();
             string message = "Hello from Git";
             int batchSize = 10;
+            int loopCount = 5;
 
             Console.WriteLine("Hello world");
 
@@ -27,9 +28,13 @@ namespace stress_eventhub
 
             Publisher pub = new Publisher(config["eventhub"]);
 
-            if(config["batch"] != null)
+            if (config["batch"] != null)
             {
                 batchSize = Int32.Parse(config["batch"]);
+            }
+            if (config["loop"] != null)
+            {
+                loopCount = Int32.Parse(config["loop"]);
             }
 
             Console.Write("Initializing... ");
@@ -39,8 +44,8 @@ namespace stress_eventhub
 
             watch.Start();
 
-            Console.Write("Sending messages ({1}x {0})... ", message, batchSize);
-            pub.SendAsync(message, batchSize).Wait();
+            Console.Write("Sending messages ({1}x {0}), batch size={2} ... ", message, loopCount, batchSize);
+            pub.SendAsync(message, loopCount, batchSize).Wait();
             Console.WriteLine("DONE");
 
             watch.Stop();

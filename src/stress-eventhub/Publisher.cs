@@ -21,7 +21,7 @@ namespace stress_eventhub
             return _client.SendAsync(new EventData(Encoding.UTF8.GetBytes("Init")));
         }
 
-        public Task SendAsync(string message, int batchSize)
+        public Task SendAsync(string message, int loopCount, int batchSize)
         {
             byte[] messageBody = Encoding.UTF8.GetBytes(message);
 
@@ -32,7 +32,14 @@ namespace stress_eventhub
                 eventList[i] = new EventData(messageBody);
             }
 
-            return _client.SendBatchAsync(eventList);
+            Task[] taskList = new Task[loopCount];
+
+            for (int i=0; i< loopCount; i++)
+            {
+                taskList[i] = _client.SendBatchAsync(eventList);
+            }
+
+            return Task.WhenAll(taskList);
         } 
     }
 }
