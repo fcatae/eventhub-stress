@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "stress-eventhub": {
+      "commandName": "Project"
+    }
+  }
+}

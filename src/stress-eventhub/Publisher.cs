@@ -21,10 +21,9 @@ namespace stress_eventhub
             return _client.SendAsync(new EventData(Encoding.UTF8.GetBytes("Init")));
         }
 
-        public Task SendAsync()
+        public Task SendAsync(string message, int batchSize)
         {
-            int batchSize = 10;
-            byte[] messageBody = Encoding.UTF8.GetBytes("Send async message");
+            byte[] messageBody = Encoding.UTF8.GetBytes(message);
 
             EventData[] eventList = new EventData[batchSize];
 
