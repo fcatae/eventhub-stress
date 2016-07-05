@@ -1,7 +1,8 @@
 {
   "profiles": {
     "stress-eventhub": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "--batch 100 --loop 100"
     }
   }
 }

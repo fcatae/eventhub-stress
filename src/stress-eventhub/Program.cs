@@ -10,6 +10,8 @@ namespace stress_eventhub
 {
     public class Program
     {
+        public static int TotalMessages = 0;
+
         public static void Main(string[] args)
         {
             Stopwatch watch = new Stopwatch();
@@ -21,6 +23,7 @@ namespace stress_eventhub
 
             var builder = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
+                .AddJsonFile("app.json", optional: true)
                 .AddUserSecrets("aspnet-stress-eventhub-20160705064558")
                 .AddCommandLine(args);
 
@@ -52,6 +55,9 @@ namespace stress_eventhub
 
             Console.WriteLine();
             Console.WriteLine("  Total time = {0}", watch.ElapsedMilliseconds);
+            Console.WriteLine("  Total messages= {0}", Program.TotalMessages);
+            Console.WriteLine();
+            Console.WriteLine("  Througput= {0}", 1000 * Program.TotalMessages / watch.ElapsedMilliseconds);
 
             Console.ReadLine();
         }

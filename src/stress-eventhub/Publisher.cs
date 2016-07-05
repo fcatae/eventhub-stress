@@ -36,6 +36,8 @@ namespace stress_eventhub
 
             for (int i=0; i< loopCount; i++)
             {
+                Program.TotalMessages += eventList.Length;
+
                 taskList[i] = _client.SendBatchAsync(eventList);
             }
 
