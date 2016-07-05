@@ -18,6 +18,7 @@ namespace stress_eventhub
             string message = "Hello from Git";
             int batchSize = 10;
             int loopCount = 5;
+            int numberPublishers = 2;
 
             Console.WriteLine("Hello world");
 
@@ -39,8 +40,14 @@ namespace stress_eventhub
             {
                 loopCount = Int32.Parse(config["loop"]);
             }
+            if (config["pub"] != null)
+            {
+                numberPublishers = Int32.Parse(config["pub"]);
+            }
 
-            Publisher pub = new Publisher(connectionString, config["eventhub-path"]);
+            IPublisher pub = (numberPublishers == 1) ?
+                (IPublisher)new Publisher(connectionString, config["eventhub-path"]) : 
+                (IPublisher)new MultiPublisher(numberPublishers, connectionString, config["eventhub-path"]);
 
             Console.Write("Initializing... ");
 

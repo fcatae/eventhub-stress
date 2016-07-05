@@ -7,15 +7,16 @@ using Microsoft.ServiceBus.Messaging;
 
 namespace stress_eventhub
 {
-    public class Publisher
+    public interface IPublisher
+    {
+        Task InitAsync();
+        Task SendAsync(string message, int loopCount, int batchSize);
+    }
+
+    public class Publisher : IPublisher
     {
         EventHubClient _client;
-
-        public Publisher(string connStr)
-        {
-            _client = EventHubClient.CreateFromConnectionString(connStr);
-        }
-
+        
         public Publisher(string connStr, string path) : this(connStr, path, true)
         {
         }
@@ -31,6 +32,8 @@ namespace stress_eventhub
             {
                 _client = EventHubClient.CreateFromConnectionString(connStr, path);
             }
+
+            Console.WriteLine("Creating Publisher...");
         }
 
         public Task InitAsync()
