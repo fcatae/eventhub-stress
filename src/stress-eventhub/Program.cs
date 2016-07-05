@@ -47,8 +47,12 @@ namespace stress_eventhub
 
             watch.Start();
 
-            Console.Write("Sending messages ({1}x {0}), batch size={2} ... ", message, loopCount, batchSize);
-            pub.SendAsync(message, loopCount, batchSize).Wait();
+            Console.Write("Sending messages ({1}x {0}), batch size={2} .", message, loopCount, batchSize);
+            var task = pub.SendAsync(message, loopCount, batchSize);
+
+            Console.Write(".. ");
+            task.Wait();
+
             Console.WriteLine("DONE");
 
             watch.Stop();
