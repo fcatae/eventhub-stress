@@ -9,6 +9,8 @@ namespace stress_eventhub
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine("Hello world");
+            Console.ReadLine();
         }
     }
 }
