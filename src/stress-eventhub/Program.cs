@@ -56,7 +56,7 @@ namespace stress_eventhub
 
             IPublisher pub = (numberPublishers == 1) ?
                 (IPublisher)new Publisher(connectionString, eventhubPath, newConnection: false) : 
-                (IPublisher)new MultiPublisher(numberPublishers, connectionString, eventhubPath, shouldReuse);
+                (IPublisher)new MultiPublisher(numberPublishers, connectionString, eventhubPath, createNew: !shouldReuse);
 
             Console.WriteLine($"Using protocol: {proto}");
 
