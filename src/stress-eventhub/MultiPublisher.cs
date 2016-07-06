@@ -10,12 +10,12 @@ namespace stress_eventhub
         int _instanceCount;
         Publisher[] _publishers;
 
-        public MultiPublisher(int instances, string connectionString, string path)
+        public MultiPublisher(int instances, string connectionString, string path, bool createNew)
         {
             _publishers = new Publisher[instances];
             _instanceCount = instances;
 
-            SetPublisher(all => new Publisher(connectionString, path));
+            SetPublisher(all => new Publisher(connectionString, path, createNew));
         }
 
         Task Map(Func<Publisher, Task> func)

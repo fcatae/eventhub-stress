@@ -45,9 +45,12 @@ namespace stress_eventhub
                 numberPublishers = Int32.Parse(config["pub"]);
             }
 
+            bool shouldReuse = (config["reuse"] != null);
+            string eventhubPath = config["eventhub-path"];
+
             IPublisher pub = (numberPublishers == 1) ?
-                (IPublisher)new Publisher(connectionString, config["eventhub-path"]) : 
-                (IPublisher)new MultiPublisher(numberPublishers, connectionString, config["eventhub-path"]);
+                (IPublisher)new Publisher(connectionString, eventhubPath) : 
+                (IPublisher)new MultiPublisher(numberPublishers, connectionString, eventhubPath, shouldReuse);
 
             Console.Write("Initializing... ");
 
