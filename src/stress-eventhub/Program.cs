@@ -67,12 +67,12 @@ namespace stress_eventhub
             watch.Stop();
 
             Console.WriteLine();
-            Console.WriteLine("  Total time = {0}", watch.ElapsedMilliseconds);
-            Console.WriteLine("  Total messages= {0}", Program.TotalMessages);
+            Console.WriteLine("  Total time = {0} ms", watch.ElapsedMilliseconds);
+            Console.WriteLine("  Total messages= {0} msgs", Program.TotalMessages);
             Console.WriteLine();
-            Console.WriteLine("  Througput= {0}", 1000 * Program.TotalMessages / watch.ElapsedMilliseconds);
+            Console.WriteLine("  Througput= {0} msg/sec", 1000 * Program.TotalMessages / watch.ElapsedMilliseconds);
 
-            Console.ReadLine();
+            //Console.ReadLine();
         }
     }
 }
