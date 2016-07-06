@@ -18,7 +18,7 @@ namespace stress_eventhub
             string message = "Hello from Git";
             int batchSize = 10;
             int loopCount = 5;
-            int numberPublishers = 2;
+            int numberPublishers = 1;
 
             Console.WriteLine("Hello world");
 
@@ -29,8 +29,14 @@ namespace stress_eventhub
                 .AddCommandLine(args);
 
             var config = builder.Build();
-
+            
+            string proto = config["proto"] ?? "Amqp";
             string connectionString = config["eventhub-ns"];
+
+            if(proto != null)
+            {
+                connectionString += $";TransportType={proto}";
+            }
 
             if (config["batch"] != null)
             {
@@ -49,8 +55,10 @@ namespace stress_eventhub
             string eventhubPath = config["eventhub-path"];
 
             IPublisher pub = (numberPublishers == 1) ?
-                (IPublisher)new Publisher(connectionString, eventhubPath) : 
+                (IPublisher)new Publisher(connectionString, eventhubPath, newConnection: false) : 
                 (IPublisher)new MultiPublisher(numberPublishers, connectionString, eventhubPath, shouldReuse);
+
+            Console.WriteLine($"Using protocol: {proto}");
 
             Console.Write("Initializing... ");
 
