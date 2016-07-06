@@ -47,18 +47,20 @@ namespace stress_eventhub
 
             EventData[] eventList = new EventData[batchSize];
 
-            for (int i=0; i<batchSize; i++)
-            {
-                eventList[i] = new EventData(messageBody);
-            }
-
             Task[] taskList = new Task[loopCount];
 
             for (int i=0; i< loopCount; i++)
             {
                 Program.TotalMessages += eventList.Length;
 
-                taskList[i] = _client.SendBatchAsync(eventList);
+                for (int j = 0; j < batchSize; j++)
+                {
+                    eventList[j] = new EventData(messageBody);
+                }
+
+                taskList[i] = (batchSize == 1) ?
+                    _client.SendAsync(eventList[0]) : 
+                    _client.SendBatchAsync(eventList);
             }
 
             return Task.WhenAll(taskList);
