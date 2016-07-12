@@ -1,0 +1,4 @@
+﻿{
+  "eventhub-ns": "<Endpoint:...>",
+  "eventhub-path": "<EventHubName>"
+}
