@@ -38,9 +38,9 @@ namespace stress_eventhub
             }
         }
 
-        public Task InitAsync()
+        public Task InitAsync(string message)
         {
-            return Map(p => p.InitAsync());
+            return Map(p => p.InitAsync(message));
         }
 
         public Task SendAsync(string message, int loopCount, int batchSize)

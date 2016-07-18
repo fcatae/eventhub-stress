@@ -30,7 +30,7 @@ namespace reader
             Console.WriteLine("DONE");
 
             Console.Write("Setup Readers... ");
-            reader.Read();
+            reader.Read<EventProcess>();
             Console.WriteLine("DONE");
 
             Console.WriteLine("Waiting...");

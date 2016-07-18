@@ -42,26 +42,15 @@ namespace reader
             this._partitions = readers;
         }
 
-        public void Read()
+        public void Read<TEventProcess>() 
+            where TEventProcess : IEventProcess, new()
         {
             int total = this._partitions.Length;
 
-            foreach(var partition in this._partitions)
+            foreach (var partition in this._partitions)
             {
-                partition.ReadAsync().ContinueWith( task => {
-
-                    var events = task.Result;
-
-                    foreach(var ev in events)
-                    {
-                        var seq = ev.SequenceNumber;
-                        var time = ev.EnqueuedTimeUtc; 
-                        var buffer = ev.GetBytes();
-                        string msg = new string(Encoding.UTF8.GetChars(buffer));
-                        Console.WriteLine(msg + ": "+ seq.ToString() + " : " + time.ToLongTimeString());
-                    }
-
-                });
+                var ev = new TEventProcess();
+                var task = partition.ProcessLoop(ev).ConfigureAwait(false);
             }
         }
 
@@ -72,17 +61,28 @@ namespace reader
             return partitionInfo.LastEnqueuedOffset;            
         }
 
+        Task<EventHubReceiver> CreateEventHubReceiverAsync(string partition_id)
+        {
+            return this._client.GetDefaultConsumerGroup().CreateReceiverAsync(partition_id);
+        }
+
         Task<EventHubReceiver> CreateEventHubReceiverAsync(string partition_id, string offset)
         {
             return this._client.GetDefaultConsumerGroup().CreateReceiverAsync(partition_id, offset, offsetInclusive: false);
         }
 
+        Task<EventHubReceiver> CreateEventHubReceiverAsync(string partition_id, DateTime startTime)
+        {
+            return this._client.GetDefaultConsumerGroup().CreateReceiverAsync(partition_id, startTime);
+        }
+
         async Task<ReaderPartition> CreateReaderPartitionAsync(string partition_id)
         {
             string offset = await GetLastEnqueuedOffsetAsync(partition_id);
-            //var receiver = await CreateEventHubReceiverAsync(partition_id, offset);
+            
+            var receiver = await CreateEventHubReceiverAsync(partition_id, offset);
 
-            var receiver = await CreateEventHubReceiverAsync(partition_id, "0");
+            // var receiver = await CreateEventHubReceiverAsync(partition_id);
 
             return new ReaderPartition(receiver);
         }

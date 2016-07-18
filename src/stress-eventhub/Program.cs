@@ -12,12 +12,15 @@ namespace stress_eventhub
     {
         public static int TotalMessages = 0;
 
+        static string[] g_AllMessages = { "hello_world", "json_rules", "compact_binary" };
+
         public static void Main(string[] args)
         {
             Stopwatch watch = new Stopwatch();
-            string message = "Hello from Git";
-            int batchSize = 10;
-            int loopCount = 5;
+            string message = g_AllMessages[0];
+            int batchSize = 1;
+            int asyncCount = 30;
+            int loopCount = 10;
             int numberPublishers = 1;
 
             Console.WriteLine("Hello world");
@@ -42,6 +45,10 @@ namespace stress_eventhub
             {
                 batchSize = Int32.Parse(config["batch"]);
             }
+            if (config["async"] != null)
+            {
+                asyncCount = Int32.Parse(config["async"]);
+            }
             if (config["loop"] != null)
             {
                 loopCount = Int32.Parse(config["loop"]);
@@ -62,18 +69,16 @@ namespace stress_eventhub
 
             Console.Write("Initializing... ");
 
-            pub.InitAsync().Wait();
+            pub.InitAsync("Init").Wait();
             Console.WriteLine("DONE");
 
             watch.Start();
 
-            Console.Write("Sending messages ({1}x {0}), batch size={2} .", message, loopCount, batchSize);
-            var task = pub.SendAsync(message, loopCount, batchSize);
-
-            Console.Write(".. ");
-            task.Wait();
-
-            Console.WriteLine("DONE");
+            Console.WriteLine($"Sending messages ({message})");
+            Console.WriteLine($"  - loopCount = {loopCount}");
+            Console.WriteLine($"  - asyncCount = {asyncCount}");
+            Console.WriteLine($"  - batchSize = {batchSize}");
+            SendAsync(pub, message, loopCount, asyncCount, batchSize).Wait();
 
             watch.Stop();
 
@@ -84,6 +89,22 @@ namespace stress_eventhub
             Console.WriteLine("  Througput= {0} msg/sec", 1000 * Program.TotalMessages / watch.ElapsedMilliseconds);
 
             //Console.ReadLine();
+        }
+
+        static async Task SendAsync(IPublisher pub, string message, int loopCount, int asyncCount, int batchSize)
+        {
+            Console.Write("Sending messages ({1}x {0}), batch size={2} .", message, asyncCount, batchSize);
+
+            await pub.SendAsync(message, asyncCount, batchSize);
+
+            Console.Write(".. ");
+
+            for(int i=1; i<loopCount; i++)
+            {
+                await pub.SendAsync(message, asyncCount, batchSize);
+            }
+
+            Console.WriteLine("DONE");
         }
     }
 }

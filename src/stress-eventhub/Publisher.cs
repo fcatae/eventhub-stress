@@ -9,7 +9,7 @@ namespace stress_eventhub
 {
     public interface IPublisher
     {
-        Task InitAsync();
+        Task InitAsync(string message);
         Task SendAsync(string message, int loopCount, int batchSize);
     }
 
@@ -36,20 +36,20 @@ namespace stress_eventhub
             Console.WriteLine("Creating Publisher...");
         }
 
-        public Task InitAsync()
+        public Task InitAsync(string message)
         {
-            return _client.SendAsync(new EventData(Encoding.UTF8.GetBytes("Init")));
+            return _client.SendAsync(new EventData(Encoding.UTF8.GetBytes(message)));
         }
 
-        public Task SendAsync(string message, int loopCount, int batchSize)
+        public Task SendAsync(string message, int asyncCount, int batchSize)
         {
             byte[] messageBody = Encoding.UTF8.GetBytes(message);
 
             EventData[] eventList = new EventData[batchSize];
 
-            Task[] taskList = new Task[loopCount];
+            Task[] taskList = new Task[asyncCount];
 
-            for (int i=0; i< loopCount; i++)
+            for (int i=0; i< asyncCount; i++)
             {
                 Program.TotalMessages += eventList.Length;
 
