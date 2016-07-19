@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.ServiceBus.Messaging;
@@ -82,7 +83,7 @@ namespace stress_eventhub
             Console.WriteLine($"  - batchSize = {batchSize}");
             Console.WriteLine();
 
-            SendAsync(pub, message, loopCount, asyncCount, batchSize).Wait();
+            SendLoopAsync(pub, message, loopCount, asyncCount, batchSize).Wait();
 
             watch.Stop();
 
@@ -97,23 +98,24 @@ namespace stress_eventhub
 
         static IPublisher CreateEventHub(string connectionString, string eventhubPath)
         {
-            return (IPublisher)new Publisher(connectionString, eventhubPath, newConnection: false);
+            return (IPublisher)new EventHubPublisher(connectionString, eventhubPath, newConnection: false);
         }
 
-        static async Task SendAsync(IPublisher pub, string message, int loopCount, int asyncCount, int batchSize)
+        static async Task SendLoopAsync(IPublisher pub, string message, int loopCount, int asyncCount, int batchSize)
         {
             Console.Write("Sending message... ");
-
-            await pub.SendAsync(message, asyncCount, batchSize);
-
-            Console.WriteLine("STARTED");
-
+            
             int total = 0;
             int limit = 10;
 
             for (int i=0; i<loopCount; i++)
             {
-                await pub.SendAsync(message, asyncCount, batchSize);
+                await SendAsync(pub, message, asyncCount, batchSize);
+
+                if( i == 0 )
+                {
+                    Console.WriteLine("STARTED");
+                }
 
                 total += batchSize;
 
@@ -126,6 +128,21 @@ namespace stress_eventhub
 
             Console.WriteLine();
             Console.WriteLine("DONE");
+        }
+
+        static Task SendAsync(IPublisher pub, string message, int asyncCount, int batchSize)
+        {
+            byte[] messageBody = Encoding.UTF8.GetBytes(message);
+
+            Task[] taskList = new Task[asyncCount];
+
+            for (int i = 0; i < asyncCount; i++)
+            {
+                Program.TotalMessages += batchSize;
+                taskList[i] = pub.SendAsync(message, batchSize);
+            }
+
+            return Task.WhenAll(taskList);
         }
     }
 }

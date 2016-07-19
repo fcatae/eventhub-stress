@@ -7,21 +7,15 @@ using Microsoft.ServiceBus.Messaging;
 
 namespace stress_eventhub
 {
-    public interface IPublisher
-    {
-        Task InitAsync(string message);
-        Task SendAsync(string message, int loopCount, int batchSize);
-    }
-
-    public class Publisher : IPublisher
+    public class EventHubPublisher : IPublisher
     {
         EventHubClient _client;
         
-        public Publisher(string connStr, string path) : this(connStr, path, true)
+        public EventHubPublisher(string connStr, string path) : this(connStr, path, true)
         {
         }
 
-        public Publisher(string connStr, string path, bool newConnection)
+        public EventHubPublisher(string connStr, string path, bool newConnection)
         {
             if(newConnection)
             {
@@ -64,6 +58,27 @@ namespace stress_eventhub
             }
 
             return Task.WhenAll(taskList);
-        } 
+        }
+
+        public Task SendAsync(string message, int batchSize)
+        {
+            byte[] messageBody = Encoding.UTF8.GetBytes(message);
+
+            EventData[] eventList = new EventData[batchSize];
+
+            for (int j = 0; j < batchSize; j++)
+            {
+                eventList[j] = new EventData(messageBody);
+            }
+            
+            // Return a single message
+            if (batchSize == 1)
+            {                
+                return _client.SendAsync(eventList[0]);
+            }
+
+            // Return a batch of messages
+            return _client.SendBatchAsync(eventList);
+        }
     }
 }
