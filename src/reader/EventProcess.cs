@@ -45,10 +45,6 @@ namespace reader
                     _statCount = 0;
                     _statMsg = new string(Encoding.UTF8.GetChars(buffer));
                 }
-
-
-
-
             }
         }
     }

@@ -25,6 +25,16 @@ namespace reader
 
             var reader = new Reader(eventHubNS, eventHubName);
 
+            //if (config["type"] == "azurequeue")
+            {
+                string azureQueueNS = config["azurequeue-ns"];
+                string azureQueueName = config["azurequeue-path"];
+
+                var queueReader = new QueueReader(azureQueueNS, azureQueueName);
+                queueReader.Init();
+                queueReader.Read();
+            }
+
             Console.Write("Initializing... ");
             reader.Init();
             Console.WriteLine("DONE");
