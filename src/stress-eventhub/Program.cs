@@ -92,6 +92,18 @@ namespace stress_eventhub
             Console.WriteLine("DONE");
             Console.WriteLine();
 
+            Console.Write("Opening messages... ");
+
+            var loader = new MessageLoader();
+            loader.Load(".");
+
+            Console.Write($"FOUND {loader.MessageCount} messages");
+
+            message = loader.GetRandom();
+
+            Console.WriteLine("DONE");
+            Console.WriteLine();
+
             watch.Start();
 
             Console.WriteLine("Message body:");

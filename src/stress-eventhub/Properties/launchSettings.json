@@ -2,7 +2,7 @@
   "profiles": {
     "stress-eventhub": {
       "commandName": "Project",
-      "commandLineArgs": "--loop 100 --type azurequeue"
+      "commandLineArgs": "--loop 100"
     }
   }
 }
