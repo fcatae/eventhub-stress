@@ -12,13 +12,10 @@ namespace stress_eventhub
     public class Program
     {
         public static int TotalMessages = 0;
-
-        static string[] g_AllMessages = { "hello_world", "json_rules", "compact_binary" };
-
+        
         public static void Main(string[] args)
         {
             Stopwatch watch = new Stopwatch();
-            string message = g_AllMessages[0];
             string pubtype = "eventhub";
             int batchSize = 1;
             int asyncCount = 30;
@@ -97,27 +94,23 @@ namespace stress_eventhub
             var loader = new MessageLoader();
             loader.Load(".");
 
-            Console.Write($"FOUND {loader.MessageCount} messages");
-
-            message = loader.GetRandom();
-
-            Console.WriteLine("DONE");
+            Console.WriteLine($"FOUND {loader.MessageCount} messages");
             Console.WriteLine();
 
             watch.Start();
 
-            Console.WriteLine("Message body:");
-            Console.WriteLine("+++++++++++++++++++++++++++++++");
-            Console.WriteLine(message);
-            Console.WriteLine("+++++++++++++++++++++++++++++++");
-            Console.WriteLine();
+            //Console.WriteLine("Message body:");
+            //Console.WriteLine("+++++++++++++++++++++++++++++++");
+            //Console.WriteLine(message);
+            //Console.WriteLine("+++++++++++++++++++++++++++++++");
+            //Console.WriteLine();
             Console.WriteLine($"Sending message settings:");
             Console.WriteLine($"  - loopCount = {loopCount}");
             Console.WriteLine($"  - asyncCount = {asyncCount}");
             Console.WriteLine($"  - batchSize = {batchSize}");
             Console.WriteLine();
 
-            SendLoopAsync(pub, message, loopCount, asyncCount, batchSize).Wait();
+            SendLoopAsync(pub, loader, loopCount, asyncCount, batchSize).Wait();
 
             watch.Stop();
 
@@ -140,7 +133,7 @@ namespace stress_eventhub
             return new AzureQueuePublisher(connectionString, queuePath);
         }
 
-        static async Task SendLoopAsync(IPublisher pub, string message, int loopCount, int asyncCount, int batchSize)
+        static async Task SendLoopAsync(IPublisher pub, MessageLoader messageLoader, int loopCount, int asyncCount, int batchSize)
         {
             Console.WriteLine("Sending message... ");
             
@@ -149,6 +142,8 @@ namespace stress_eventhub
 
             for (int i=0; i<loopCount; i++)
             {
+                string message = messageLoader.GetRandom();
+
                 await SendAsync(pub, message, asyncCount, batchSize);
 
                 if( i == 0 )
