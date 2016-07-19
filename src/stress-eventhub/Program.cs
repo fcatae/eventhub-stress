@@ -23,7 +23,7 @@ namespace stress_eventhub
             int loopCount = 10;
             int numberPublishers = 1;
 
-            Console.WriteLine("Hello world");
+            Console.WriteLine("SENDER: Stress Test");
 
             var builder = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
@@ -53,6 +53,7 @@ namespace stress_eventhub
             {
                 loopCount = Int32.Parse(config["loop"]);
             }
+
             if (config["pub"] != null)
             {
                 numberPublishers = Int32.Parse(config["pub"]);
