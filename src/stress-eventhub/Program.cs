@@ -57,27 +57,30 @@ namespace stress_eventhub
             {
                 numberPublishers = Int32.Parse(config["pub"]);
             }
-
-            bool shouldReuse = (config["reuse"] != null);
+            
             string eventhubPath = config["eventhub-path"];
 
-            IPublisher pub = (numberPublishers == 1) ?
-                (IPublisher)new Publisher(connectionString, eventhubPath, newConnection: false) : 
-                (IPublisher)new MultiPublisher(numberPublishers, connectionString, eventhubPath, createNew: !shouldReuse);
+            IPublisher pub = CreateEventHub(connectionString, eventhubPath);
 
             Console.WriteLine($"Using protocol: {proto}");
 
             Console.Write("Initializing... ");
 
             pub.InitAsync("Init").Wait();
+
             Console.WriteLine("DONE");
 
             watch.Start();
 
+            Console.WriteLine("Message body:");
+            Console.WriteLine(message);
+            Console.WriteLine();
             Console.WriteLine($"Sending messages ({message})");
             Console.WriteLine($"  - loopCount = {loopCount}");
             Console.WriteLine($"  - asyncCount = {asyncCount}");
             Console.WriteLine($"  - batchSize = {batchSize}");
+            Console.WriteLine();
+
             SendAsync(pub, message, loopCount, asyncCount, batchSize).Wait();
 
             watch.Stop();
@@ -88,22 +91,39 @@ namespace stress_eventhub
             Console.WriteLine();
             Console.WriteLine("  Througput= {0} msg/sec", 1000 * Program.TotalMessages / watch.ElapsedMilliseconds);
 
-            //Console.ReadLine();
+            Console.ReadLine();
+        }
+
+        static IPublisher CreateEventHub(string connectionString, string eventhubPath)
+        {
+            return (IPublisher)new Publisher(connectionString, eventhubPath, newConnection: false);
         }
 
         static async Task SendAsync(IPublisher pub, string message, int loopCount, int asyncCount, int batchSize)
         {
-            Console.Write("Sending messages ({1}x {0}), batch size={2} .", message, asyncCount, batchSize);
+            Console.Write("Sending message... ");
 
             await pub.SendAsync(message, asyncCount, batchSize);
 
-            Console.Write(".. ");
+            Console.WriteLine("STARTED");
 
-            for(int i=1; i<loopCount; i++)
+            int total = 0;
+            int limit = 10;
+
+            for (int i=0; i<loopCount; i++)
             {
                 await pub.SendAsync(message, asyncCount, batchSize);
+
+                total += batchSize;
+
+                while(total > limit)
+                {
+                    Console.Write(".");
+                    total -= limit;
+                }
             }
 
+            Console.WriteLine();
             Console.WriteLine("DONE");
         }
     }
