@@ -19,12 +19,13 @@ namespace stress_eventhub
         {
             Stopwatch watch = new Stopwatch();
             string message = g_AllMessages[0];
+            string pubtype = "eventhub";
             int batchSize = 1;
             int asyncCount = 30;
             int loopCount = 10;
-            int numberPublishers = 1;
 
             Console.WriteLine("SENDER: Stress Test");
+            Console.WriteLine();
 
             var builder = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
@@ -34,14 +35,6 @@ namespace stress_eventhub
 
             var config = builder.Build();
             
-            string proto = config["proto"] ?? "Amqp";
-            string connectionString = config["eventhub-ns"];
-
-            if(proto != null)
-            {
-                connectionString += $";TransportType={proto}";
-            }
-
             if (config["batch"] != null)
             {
                 batchSize = Int32.Parse(config["batch"]);
@@ -54,30 +47,59 @@ namespace stress_eventhub
             {
                 loopCount = Int32.Parse(config["loop"]);
             }
-
-            if (config["pub"] != null)
+            if (config["type"] != null)
             {
-                numberPublishers = Int32.Parse(config["pub"]);
+                pubtype = config["type"];
             }
-            
-            string eventhubPath = config["eventhub-path"];
 
-            IPublisher pub = CreateEventHub(connectionString, eventhubPath);
+            Console.Write($"Creating Publisher [{pubtype}]... ");
 
-            Console.WriteLine($"Using protocol: {proto}");
+            IPublisher pub = null;
+
+            if (pubtype == "azurequeue")
+            {
+                string azureQueueNamespace = config["azurequeue-ns"];
+                string azureQueuePath = config["azurequeue-path"];
+
+                pub = CreateAzureQueue(azureQueueNamespace, azureQueuePath);
+            }
+
+            if (pubtype == "eventhub")
+            {
+                string proto = config["proto"] ?? "Amqp";
+                string eventHubNamespace = config["eventhub-ns"];
+
+                if (proto != null)
+                {
+                    eventHubNamespace += $";TransportType={proto}";
+                    Console.WriteLine($"Using protocol: {proto}");
+                }
+                string eventhubPath = config["eventhub-path"];
+
+                pub = CreateEventHub(eventHubNamespace, eventhubPath);
+            }
+
+            if (pub == null)
+                throw new Exception("Invalid pub");
+
+            Console.WriteLine("DONE");
+            Console.WriteLine();
 
             Console.Write("Initializing... ");
 
             pub.InitAsync("Init").Wait();
 
             Console.WriteLine("DONE");
+            Console.WriteLine();
 
             watch.Start();
 
             Console.WriteLine("Message body:");
+            Console.WriteLine("+++++++++++++++++++++++++++++++");
             Console.WriteLine(message);
+            Console.WriteLine("+++++++++++++++++++++++++++++++");
             Console.WriteLine();
-            Console.WriteLine($"Sending messages ({message})");
+            Console.WriteLine($"Sending message settings:");
             Console.WriteLine($"  - loopCount = {loopCount}");
             Console.WriteLine($"  - asyncCount = {asyncCount}");
             Console.WriteLine($"  - batchSize = {batchSize}");
@@ -98,12 +120,17 @@ namespace stress_eventhub
 
         static IPublisher CreateEventHub(string connectionString, string eventhubPath)
         {
-            return (IPublisher)new EventHubPublisher(connectionString, eventhubPath, newConnection: false);
+            return new EventHubPublisher(connectionString, eventhubPath, newConnection: false);
+        }
+
+        static IPublisher CreateAzureQueue(string connectionString, string queuePath)
+        {
+            return new AzureQueuePublisher(connectionString, queuePath);
         }
 
         static async Task SendLoopAsync(IPublisher pub, string message, int loopCount, int asyncCount, int batchSize)
         {
-            Console.Write("Sending message... ");
+            Console.WriteLine("Sending message... ");
             
             int total = 0;
             int limit = 10;

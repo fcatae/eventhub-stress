@@ -26,8 +26,6 @@ namespace stress_eventhub
             {
                 _client = EventHubClient.CreateFromConnectionString(connStr, path);
             }
-
-            Console.WriteLine("Creating Publisher...");
         }
 
         public Task InitAsync(string message)
