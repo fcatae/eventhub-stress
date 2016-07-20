@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "reader": {
+      "commandName": "Project",
+      "commandLineArgs": "--type azurequeue"
+    }
+  }
+}

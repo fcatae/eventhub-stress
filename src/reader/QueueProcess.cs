@@ -23,7 +23,9 @@ namespace reader
 
                 int seconds = time.Second;
 
-                if (seconds == _lastSecond)
+                bool outOfOrderMessage = seconds < _lastSecond;
+
+                if (seconds == _lastSecond || outOfOrderMessage) 
                 {
                     // update statistics
                     _statCount++;

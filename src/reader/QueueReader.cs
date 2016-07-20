@@ -38,15 +38,16 @@ namespace reader
         {
         }
 
-        public async void Read()
+        public async void ReadAsync()
         {
             var queueProcessor = new QueueProcess();
 
             while(true)
-            {                
-                var retrievedMessage = _queue.GetMessages(10);
+            {
+                //var retrievedMessage = _queue.GetMessages(32);
+                var retrievedMessage = GetBatchMessages();
 
-                if( retrievedMessage == null )
+                if ( retrievedMessage == null )
                 {
                     await Task.Delay(5);
                     continue;
@@ -60,7 +61,28 @@ namespace reader
                 }
                 
             }
+        }
 
+        IEnumerable<CloudQueueMessage> GetBatchMessages()
+        {
+            int parallelRequests = 30;
+
+            Task<IEnumerable<CloudQueueMessage>>[] tasks = new Task<IEnumerable<CloudQueueMessage>>[parallelRequests];
+
+            for (int i=0; i<parallelRequests; i++)
+            {
+                tasks[i] = _queue.GetMessagesAsync(32);
+            }
+
+            Task.WaitAll(tasks);
+
+            List<CloudQueueMessage> messages = new List<CloudQueueMessage>();
+            for (int i = 0; i < parallelRequests; i++)
+            {
+                messages.AddRange(tasks[i].Result);
+            }
+
+            return messages;
         }
     }
 }

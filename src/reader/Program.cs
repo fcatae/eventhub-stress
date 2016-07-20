@@ -20,30 +20,36 @@ namespace reader
 
             var config = builder.Build();
 
-            string eventHubNS = config["eventhub-ns"];
-            string eventHubName = config["eventhub-path"];
+            string pubtype = config["type"] ?? "eventhub";
 
-            var reader = new Reader(eventHubNS, eventHubName);
-
-            //if (config["type"] == "azurequeue")
+            if (pubtype == "azurequeue")
             {
                 string azureQueueNS = config["azurequeue-ns"];
                 string azureQueueName = config["azurequeue-path"];
 
+                Console.WriteLine("Reading Azure Queues... ");
+
                 var queueReader = new QueueReader(azureQueueNS, azureQueueName);
                 queueReader.Init();
-                queueReader.Read();
+                queueReader.ReadAsync();
             }
+            else
+            {
+                string eventHubNS = config["eventhub-ns"];
+                string eventHubName = config["eventhub-path"];
 
-            Console.Write("Initializing... ");
-            reader.Init();
-            Console.WriteLine("DONE");
+                var reader = new Reader(eventHubNS, eventHubName);
 
-            Console.Write("Setup Readers... ");
-            reader.Read<EventProcess>();
-            Console.WriteLine("DONE");
+                Console.Write("Initializing... ");
+                reader.Init();
+                Console.WriteLine("DONE");
 
-            Console.WriteLine("Waiting...");
+                Console.Write("Setup Readers... ");
+                reader.Read<EventProcess>();
+                Console.WriteLine("DONE");
+
+                Console.WriteLine("Waiting...");
+            }
 
             Console.ReadLine();
         }
